@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type EdgeLengthCache struct {
 	cache     map[string]bool
@@ -124,20 +127,116 @@ func findPoisonedDuration1(timeSeries []int, duration int) int {
 	return res
 }
 
+func nextGreaterElement(nums1 []int, nums2 []int) []int {
+	monotonicStack := make([]int, len(nums2))
+	monotonicStackLen := 0
+	nextGreaterElementMap := make(map[int]int, 0)
+	for i := len(nums2) - 1; i >= 0; i-- {
+		if monotonicStackLen == 0 {
+			nextGreaterElementMap[nums2[i]] = -1
+
+			monotonicStack[monotonicStackLen] = nums2[i]
+			monotonicStackLen++
+
+			continue
+		}
+
+		if monotonicStack[monotonicStackLen-1] > nums2[i] {
+			// 栈顶大
+			fmt.Printf("monotonicStack[monotonicStackLen-1] %+v\n", monotonicStack[monotonicStackLen-1])
+			nextGreaterElementMap[nums2[i]] = monotonicStack[monotonicStackLen-1]
+
+			monotonicStack[monotonicStackLen] = nums2[i]
+			monotonicStackLen++
+		} else {
+			// 栈顶小，循环吐出元素
+			for j := monotonicStackLen - 1; j >= 0; j-- {
+				if monotonicStack[monotonicStackLen-1] < nums2[i] {
+					monotonicStackLen--
+				} else {
+					break
+				}
+			}
+			if monotonicStackLen == 0 {
+				nextGreaterElementMap[nums2[i]] = -1
+
+				monotonicStack[monotonicStackLen] = nums2[i]
+				monotonicStackLen++
+			} else {
+				nextGreaterElementMap[nums2[i]] = monotonicStack[monotonicStackLen-1]
+				monotonicStack[monotonicStackLen] = nums2[i]
+				monotonicStackLen++
+			}
+
+		}
+
+		fmt.Printf("monotonicStack： %+v\n", monotonicStack)
+
+	}
+
+	res := make([]int, 0)
+	for _, val := range nums1 {
+		res = append(res, nextGreaterElementMap[val])
+	}
+	return res
+}
+
+func findWords(words []string) []string {
+	validMap := make(map[rune]int)
+	for _, val := range "qwertyuiop" {
+		validMap[val] = 1
+	}
+	for _, val := range "asdfghjkl" {
+		validMap[val] = 2
+	}
+	for _, val := range "zxcvbnm" {
+		validMap[val] = 3
+	}
+
+	ans := make([]string, 0)
+	for _, word := range words {
+		label := 0
+		for _, val := range strings.ToLower(word) {
+			if label == 0 {
+				label = validMap[val]
+				continue
+			}
+
+			if label != validMap[val] {
+				label = -1
+				break
+			}
+		}
+		if label != -1 {
+			ans = append(ans, word)
+		}
+
+	}
+
+	return ans
+}
+
 func main() {
 	// grid := [][]int{
-	// 	{0, 1, 0, 0},
-	// 	{1, 1, 1, 0},
-	// 	{0, 1, 0, 0},
-	// 	{1, 1, 0, 0},
+	//  {0, 1, 0, 0},
+	//  {1, 1, 1, 0},
+	//  {0, 1, 0, 0},
+	//  {1, 1, 0, 0},
 	// }
 	// fmt.Println(islandPerimeter(grid))
 
 	// nums := []int{1, 1, 0, 1, 1, 1}
 	// fmt.Println(findMaxConsecutiveOnes(nums))
 
-	timeSeries := []int{1, 4}
-	fmt.Println(findPoisonedDuration(timeSeries, 2))
+	// timeSeries := []int{1, 4}
+	// fmt.Println(findPoisonedDuration(timeSeries, 2))
+
+	// nums1 := []int{4, 1, 2}
+	// nums2 := []int{1, 3, 4, 2}
+	// fmt.Printf("%+v\n", nextGreaterElement(nums1, nums2))
+
+	words := []string{"Hello", "Alaska", "Dad", "Peace"}
+	fmt.Printf("%+v\n", findWords(words))
 
 	return
 }
